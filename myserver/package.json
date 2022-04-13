@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "npx eslint .",
     "dev": "nodemon app.js",
-    "start": "set PORT=3000 && node app.js"
+    "start": "node app.js"
   },
   "author": "Dmitriy Konnov",
   "license": "ISC",
