@@ -3,11 +3,21 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const userRouter = require("./routes/users");
 const cardRouter = require("./routes/cards");
+const { ERROR_CODE_NOT_FOUND } = require("./constants/constants");
 
 const PORT = 3000;
 
 const app = express();
 app.use(bodyParser.json());
+
+app.use("/:path", (req, res, next) => {
+    if (req.params.path !== "cards" && req.params.path !== "users") {
+        res.status(ERROR_CODE_NOT_FOUND).send({
+            message: "Такой страницы не существует",
+        });
+    }
+    next();
+});
 
 app.use((req, res, next) => {
     req.user = {

@@ -70,13 +70,26 @@ const createCard = (req, res) => {
 
 const setLike = (req, res) => {
     try {
+        const cardID = req.params.cardId;
+        if (cardID.length !== 24) {
+            res.status(ERROR_CODE_BAD_REQ).send({
+                message: "Передан некорректный ID карточки",
+            });
+        }
         const owner = req.user._id;
         Card.findByIdAndUpdate(
-            req.params.cardId,
+            cardID,
             { $addToSet: { likes: owner } },
             { new: true },
         )
-            .then((card) => res.send(card))
+            .then((card) => {
+                if (!card) {
+                    res.status(ERROR_CODE_NOT_FOUND).send({
+                        message: `Карточка с данным ID не обнаружена`,
+                    });
+                }
+                res.send(card);
+            })
             .catch((err) => {
                 if (err.name === "ValidationError") {
                     res.status(ERROR_CODE_BAD_REQ).send({
@@ -99,14 +112,26 @@ const setLike = (req, res) => {
 
 const removeLike = (req, res) => {
     try {
+        const cardID = req.params.cardId;
+        if (cardID.length !== 24) {
+            res.status(ERROR_CODE_BAD_REQ).send({
+                message: "Передан некорректный ID карточки",
+            });
+        }
         const owner = req.user._id;
-        console.log(req.params.cardId);
         Card.findByIdAndUpdate(
-            req.params.cardId,
+            cardID,
             { $pull: { likes: owner } },
             { new: true },
         )
-            .then((card) => res.send(card))
+            .then((card) => {
+                if (!card) {
+                    res.status(ERROR_CODE_NOT_FOUND).send({
+                        message: `Карточка с данным ID не обнаружена`,
+                    });
+                }
+                res.send(card);
+            })
             .catch((err) => {
                 if (err.name === "ValidationError") {
                     res.status(ERROR_CODE_BAD_REQ).send({

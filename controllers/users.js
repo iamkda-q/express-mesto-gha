@@ -29,13 +29,23 @@ const getUsers = (req, res) => {
 
 const getUserById = (req, res) => {
     try {
+        if (req.params.userId.length !== 24) {
+            res.status(ERROR_CODE_BAD_REQ).send({
+                message: "Передан некорректный ID пользователя",
+            });
+        }
         User.findById(req.params.userId)
             .then((user) => {
+                if (!user) {
+                    res.status(ERROR_CODE_NOT_FOUND).send({
+                        message: `Пользователь не обнаружен`,
+                    });
+                }
                 res.send(user);
             })
             .catch((err) => {
                 if (err.name === "CastError") {
-                    res.status(ERROR_CODE_NOT_FOUND).send({
+                    res.status(ERROR_CODE_BAD_REQ).send({
                         message: `Пользователь не обнаружен`,
                     });
                 }
@@ -71,13 +81,41 @@ const createUser = (req, res) => {
 
 const updateProfileInfo = (req, res) => {
     try {
+        const { name, about, avatar } = req.body;
+        if (name) {
+            if (name.length < 2) {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: "Имя пользователя меньше 2 символов",
+                });
+            } else if (name.length > 30) {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: "Имя пользователя больше 30 символов",
+                });
+            }
+        }
+        if (about) {
+            if (about.length < 2) {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                        "Информация о пользователе (about) меньше 2 символов",
+                });
+            } else if (about.length > 30) {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                        "Информация о пользователе (about) больше 30 символов",
+                });
+            }
+        }
         const owner = req.user._id;
-        User.findByIdAndUpdate(owner, req.body, { new: true })
+        User.findByIdAndUpdate(owner, { name, about, avatar }, { new: true })
             .then((user) => {
                 res.send(user);
             })
             .catch((err) => {
-                if (err.name === "CastError" || err.name === "ValidationError") {
+                if (
+                    err.name === "CastError"
+                    || err.name === "ValidationError"
+                ) {
                     res.status(ERROR_CODE_BAD_REQ).send({
                         message:
                             "Переданы некорректные данные при попытке обновления информации",
@@ -99,7 +137,10 @@ const updateAvatar = (req, res) => {
         User.findByIdAndUpdate(owner, req.body, { new: true })
             .then((user) => res.send(user))
             .catch((err) => {
-                if (err.name === "CastError" || err.name === "ValidationError") {
+                if (
+                    err.name === "CastError"
+                    || err.name === "ValidationError"
+                ) {
                     res.status(ERROR_CODE_BAD_REQ).send({
                         message:
                             "Переданы некорректные данные при попытке обновления информации",
