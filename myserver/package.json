@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx eslint .",
-    "dev": "set PORT=3000 && node app.js",
-    "start": "set PORT=3000 && node app.js"
+    "dev": "nodemon app.js",
+    "start": "node app.js"
   },
   "author": "Dmitriy Konnov",
   "license": "ISC",
