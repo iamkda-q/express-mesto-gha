@@ -10,18 +10,16 @@ const getCards = (req, res) => {
     try {
         Card.find({})
             .then((cards) => {
-                if (cards.length == 0) {
+                if (cards.length === 0) {
                     res.send({
                         message: "Ещё нет добавленных карточек",
                     });
                 }
                 res.send(cards);
             })
-            .catch((err) =>
-                res.status(ERROR_CODE_DEFAULT).send({
+            .catch((err) => res.status(ERROR_CODE_DEFAULT).send({
                     message: `${showUnknownError(err)}`,
-                })
-            );
+                }));
     } catch (err) {
         console.log(showUnknownError(err));
     }
@@ -31,18 +29,18 @@ const deleteCard = (req, res) => {
     try {
         Card.findByIdAndRemove(req.params.cardId)
             .then((card) => {
-                if (card) {
-                    res.send({
-                        message: `Карточка "${card.name}" успешно удалена`,
-                    });
-                }
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: `Карточка не обнаружена`,
+                res.send({
+                    message: `Карточка "${card.name}" успешно удалена`,
                 });
             })
-            .catch((err) =>
-                res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err))
-            );
+            .catch((err) => {
+                if (err.name === "CastError") {
+                    res.status(ERROR_CODE_NOT_FOUND).send({
+                        message: `Карточка с ID ${req.params.cardId} не обнаружена`,
+                    });
+                }
+                res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err));
+            });
     } catch (err) {
         console.log(showUnknownError(err));
     }
@@ -56,7 +54,7 @@ const createCard = (req, res) => {
                 res.send(card);
             })
             .catch((err) => {
-                if (err.name == "ValidationError") {
+                if (err.name === "ValidationError") {
                     res.status(ERROR_CODE_BAD_REQ).send({
                         message:
                             "Переданы некорректные данные при создании карточки",
@@ -76,17 +74,17 @@ const setLike = (req, res) => {
         Card.findByIdAndUpdate(
             req.params.cardId,
             { $addToSet: { likes: owner } },
-            { new: true }
+            { new: true },
         )
             .then((card) => res.send(card))
             .catch((err) => {
-                if (err.name == "ValidationError") {
+                if (err.name === "ValidationError") {
                     res.status(ERROR_CODE_BAD_REQ).send({
                         message:
                             "Переданы некорректные данные при попытке постановки лайка",
                         reason: `${err.message}`,
                     });
-                } else if (err.name == "CastError") {
+                } else if (err.name === "CastError") {
                     res.status(ERROR_CODE_NOT_FOUND).send({
                         message: "Карточки с данным ID не существует",
                         reason: `${err.message}`,
@@ -102,20 +100,21 @@ const setLike = (req, res) => {
 const removeLike = (req, res) => {
     try {
         const owner = req.user._id;
+        console.log(req.params.cardId);
         Card.findByIdAndUpdate(
             req.params.cardId,
             { $pull: { likes: owner } },
-            { new: true }
+            { new: true },
         )
             .then((card) => res.send(card))
             .catch((err) => {
-                if (err.name == "ValidationError") {
+                if (err.name === "ValidationError") {
                     res.status(ERROR_CODE_BAD_REQ).send({
                         message:
                             "Переданы некорректные данные при попытке снятия лайка",
                         reason: `${err.message}`,
                     });
-                } else if (err.name == "CastError") {
+                } else if (err.name === "CastError") {
                     res.status(ERROR_CODE_NOT_FOUND).send({
                         message: "Карточки с данным ID не существует",
                         reason: `${err.message}`,
