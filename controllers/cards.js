@@ -27,8 +27,19 @@ const getCards = (req, res) => {
 
 const deleteCard = (req, res) => {
     try {
-        Card.findByIdAndRemove(req.params.cardId)
+        const cardID = req.params.cardId;
+        if (cardID.length !== 24) {
+            res.status(ERROR_CODE_BAD_REQ).send({
+                message: "Передан некорректный ID карточки",
+            });
+        }
+        Card.findByIdAndRemove(cardID)
             .then((card) => {
+                if (!card) {
+                    res.status(ERROR_CODE_NOT_FOUND).send({
+                        message: `Карточка с данным ID не обнаружена`,
+                    });
+                }
                 res.send({
                     message: `Карточка "${card.name}" успешно удалена`,
                 });
