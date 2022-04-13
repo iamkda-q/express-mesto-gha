@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "npx eslint .",
-    "dev": "nodemon app.js",
+    "dev": "node app.js",
     "start": "node app.js"
   },
   "author": "Dmitriy Konnov",
