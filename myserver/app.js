@@ -27,11 +27,17 @@ mongoose.connect(
 .catch(err => console.log(err));
 
 
-app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-});
+app.listen(3000);
+
+/* app.get("/", (req, res, next) => {
+    res.send(`<h1>Привет</h1>`);
+
+    next();
+}); */
 
 app.use("/", cardRouter);
+
+
 
 app.use("/", userRouter);
 
