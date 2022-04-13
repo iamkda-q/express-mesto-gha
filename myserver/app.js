@@ -25,7 +25,8 @@ mongoose.connect(
     useNewUrlParser: true,
 }).then(db => console.log('DB is connected'))
 .catch(err => console.log(err));
-
+app.use("/", cardRouter);
+app.use("/", userRouter);
 
 app.listen(3000);
 
@@ -35,10 +36,6 @@ app.listen(3000);
     next();
 }); */
 
-app.use("/", cardRouter);
 
-
-
-app.use("/", userRouter);
 
 
