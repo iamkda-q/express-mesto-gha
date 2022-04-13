@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "npx eslint .",
-    "dev": "node app.js",
-    "start": "node app.js"
+    "dev": "set PORT=3000 && node app.js",
+    "start": "set PORT=3000 && node app.js"
   },
   "author": "Dmitriy Konnov",
   "license": "ISC",
