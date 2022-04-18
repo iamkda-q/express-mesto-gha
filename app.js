@@ -10,15 +10,6 @@ const PORT = 3000;
 const app = express();
 app.use(bodyParser.json());
 
-app.use("/:path", (req, res, next) => {
-    if (req.params.path !== "cards" && req.params.path !== "users") {
-        res.status(ERROR_CODE_NOT_FOUND).send({
-            message: "Такой страницы не существует",
-        });
-    }
-    next();
-});
-
 app.use((req, res, next) => {
     req.user = {
         _id: "625609794e9cdb117177b623",
@@ -38,6 +29,12 @@ mongoose
     });
 app.use("/", cardRouter);
 app.use("/", userRouter);
+
+app.use("/", (req, res) => {
+    res.status(ERROR_CODE_NOT_FOUND).send({
+        message: "Такой страницы не существует",
+    });
+});
 
 app.listen(PORT, () => {
     console.log(`Работаем на ${PORT}`);
