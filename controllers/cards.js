@@ -41,7 +41,7 @@ const deleteCard = (req, res) => {
         .catch((err) => {
             console.log(showUnknownError(err));
             if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
+                res.status(ERROR_CODE_BAD_REQ).send({
                     message: `Карточка с ID ${req.params.cardId} не обнаружена`,
                 });
                 return;
@@ -103,7 +103,7 @@ const setLike = (req, res) => {
                 return;
             }
             if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
+                res.status(ERROR_CODE_BAD_REQ).send({
                     message: "Карточки с данным ID не существует",
                     reason: `${err.message}`,
                 });
@@ -142,7 +142,7 @@ const removeLike = (req, res) => {
                 return;
             }
             if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
+                res.status(ERROR_CODE_BAD_REQ).send({
                     message: "Карточки с данным ID не существует",
                     reason: `${err.message}`,
                 });
