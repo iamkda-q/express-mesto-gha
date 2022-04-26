@@ -8,10 +8,10 @@ const {
 
 const getCards = (req, res) => {
     Card.find({})
-        .then((cards) => {
+        .then(cards => {
             res.send(cards);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             res.status(ERROR_CODE_DEFAULT).send({
                 message: `${showUnknownError(err)}`,
@@ -27,7 +27,7 @@ const deleteCard = (req, res) => {
         });
     }
     Card.findByIdAndRemove(cardID)
-        .then((card) => {
+        .then(card => {
             if (!card) {
                 res.status(ERROR_CODE_NOT_FOUND).send({
                     message: "Карточка с данным ID не обнаружена",
@@ -38,7 +38,7 @@ const deleteCard = (req, res) => {
                 message: `Карточка "${card.name}" успешно удалена`,
             });
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "CastError") {
                 res.status(ERROR_CODE_NOT_FOUND).send({
@@ -53,10 +53,10 @@ const deleteCard = (req, res) => {
 const createCard = (req, res) => {
     const owner = req.user._id;
     Card.create({ ...req.body, owner })
-        .then((card) => {
+        .then(card => {
             res.send(card);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -83,7 +83,7 @@ const setLike = (req, res) => {
         { $addToSet: { likes: owner } },
         { new: true },
     )
-        .then((card) => {
+        .then(card => {
             if (!card) {
                 res.status(ERROR_CODE_NOT_FOUND).send({
                     message: "Карточка с данным ID не обнаружена",
@@ -92,7 +92,7 @@ const setLike = (req, res) => {
             }
             res.send(card);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -122,7 +122,7 @@ const removeLike = (req, res) => {
     }
     const owner = req.user._id;
     Card.findByIdAndUpdate(cardID, { $pull: { likes: owner } }, { new: true })
-        .then((card) => {
+        .then(card => {
             if (!card) {
                 res.status(ERROR_CODE_NOT_FOUND).send({
                     message: "Карточка с данным ID не обнаружена",
@@ -131,7 +131,7 @@ const removeLike = (req, res) => {
             }
             res.send(card);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({

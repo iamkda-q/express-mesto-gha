@@ -1,3 +1,8 @@
+/* eslint-disable consistent-return */
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const validator = require("validator");
 const User = require("../models/users");
 const {
     showUnknownError,
@@ -8,10 +13,10 @@ const {
 
 const getUsers = (req, res) => {
     User.find({})
-        .then((users) => {
+        .then(users => {
             res.send(users);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             res.status(ERROR_CODE_DEFAULT).send({
                 message: `${showUnknownError(err)}`,
@@ -26,7 +31,7 @@ const getUserById = (req, res) => {
         });
     }
     User.findById(req.params.userId)
-        .then((user) => {
+        .then(user => {
             if (!user) {
                 res.status(ERROR_CODE_NOT_FOUND).send({
                     message: "Пользователь не обнаружен",
@@ -35,7 +40,7 @@ const getUserById = (req, res) => {
             }
             res.send(user);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "CastError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -50,9 +55,18 @@ const getUserById = (req, res) => {
 };
 
 const createUser = (req, res) => {
-    User.create(req.body)
-        .then((user) => res.send(user))
-        .catch((err) => {
+    const { email, password, ...other } = req.body;
+    if (!validator.isEmail(email)) {
+        res.status(ERROR_CODE_BAD_REQ).send({
+            message: "Переданы некорректные данные электронной почты'",
+        });
+        return;
+    }
+    bcrypt
+        .hash(password, 10)
+        .then(hash => User.create({ ...other, email, password: hash }))
+        .then(user => res.send(user))
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -98,10 +112,10 @@ const updateProfileInfo = (req, res) => {
         { name, about },
         { new: true, runValidators: true },
     )
-        .then((user) => {
+        .then(user => {
             res.send(user);
         })
-        .catch((err) => {
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "CastError" || err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -123,8 +137,8 @@ const updateAvatar = (req, res) => {
         new: true,
         runValidators: true,
     })
-        .then((user) => res.send(user))
-        .catch((err) => {
+        .then(user => res.send(user))
+        .catch(err => {
             console.log(showUnknownError(err));
             if (err.name === "CastError" || err.name === "ValidationError") {
                 res.status(ERROR_CODE_BAD_REQ).send({
@@ -140,10 +154,23 @@ const updateAvatar = (req, res) => {
         });
 };
 
+const login = (req, res) => {
+    const { email, password } = req.body;
+    return User.findUserByCredentials(email, password)
+        .then(user => {
+            const token = jwt.sign({ _id: user._id }, "some-secret-key", { expiresIn: "7d" });
+            res.send({ token });
+        })
+        .catch(err => {
+            res.status(401).send({ message: err.message });
+        });
+};
+
 module.exports = {
     getUsers,
     getUserById,
     createUser,
     updateProfileInfo,
     updateAvatar,
+    login,
 };
