@@ -50,7 +50,9 @@ const createCard = (req, res, next) => {
         .then(card => {
             res.send(card);
         })
-        .catch(next);
+        .catch(err => {
+            next(err);
+        });
 };
 
 const setLike = (req, res, next) => {
