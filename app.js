@@ -19,7 +19,7 @@ mongoose
         useNewUrlParser: true,
     })
     .then(() => console.log("DB is connected"))
-    .catch((err) => {
+    .catch(err => {
         console.log(err);
     });
 
