@@ -19,7 +19,7 @@ mongoose
         useNewUrlParser: true,
     })
     .then(() => console.log("DB is connected"))
-    .catch(err => {
+    .catch((err) => {
         console.log(err);
     });
 
@@ -34,6 +34,13 @@ app.use("/", userRouter);
 app.use("/", (req, res) => {
     res.status(ERROR_CODE_NOT_FOUND).send({
         message: "Такой страницы не существует",
+    });
+});
+
+app.use((err, req, res) => {
+    const { statusCode = 500, message } = err;
+    res.status(statusCode).send({
+        message: statusCode === 500 ? "На сервере произошла неизвестная ошибка" : message,
     });
 });
 

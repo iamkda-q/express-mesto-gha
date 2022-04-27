@@ -1,81 +1,64 @@
 const Card = require("../models/cards");
-const {
-    showUnknownError,
-    ERROR_CODE_BAD_REQ,
-    ERROR_CODE_NOT_FOUND,
-    ERROR_CODE_DEFAULT,
-} = require("../constants/constants");
 
-const getCards = (req, res) => {
+const {
+    NotFoundError,
+    BadRequestError,
+} = require("../errors/errors");
+
+const getCards = (req, res, next) => {
     Card.find({})
         .then(cards => {
             res.send(cards);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
+    const currentUser = req.user._id;
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        res.status(ERROR_CODE_BAD_REQ).send({
-            message: "Передан некорректный ID карточки",
-        });
+        throw BadRequestError(
+            "Передан некорректный ID карточки",
+        );
     }
-    Card.findByIdAndRemove(cardID)
+    Card.findById(cardID)
+        // eslint-disable-next-line consistent-return
         .then(card => {
             if (!card) {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Карточка с данным ID не обнаружена",
-                });
-                return;
+                throw NotFoundError(
+                    "Карточка с данным ID не обнаружена",
+                );
             }
+            if (currentUser !== card.owner.toString()) {
+                throw BadRequestError(
+                    "Вы не являетесь владельцем данной карточки",
+                );
+            }
+        })
+        .then(() => Card.findByIdAndRemove(cardID))
+        .then(card => {
             res.send({
                 message: `Карточка "${card.name}" успешно удалена`,
             });
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: `Карточка с ID ${req.params.cardId} не обнаружена`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err));
-        });
+        .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
     const owner = req.user._id;
     Card.create({ ...req.body, owner })
         .then(card => {
             res.send(card);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при создании карточки",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err));
-        });
+        .catch(next);
 };
 
-const setLike = (req, res) => {
+const setLike = (req, res, next) => {
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        res.status(ERROR_CODE_BAD_REQ).send({
-            message: "Передан некорректный ID карточки",
-        });
+        throw BadRequestError(
+            "Передан некорректный ID карточки",
+        );
     }
     const owner = req.user._id;
     Card.findByIdAndUpdate(
@@ -85,71 +68,33 @@ const setLike = (req, res) => {
     )
         .then(card => {
             if (!card) {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Карточка с данным ID не обнаружена",
-                });
-                return;
+                throw NotFoundError(
+                    "Карточка с данным ID не обнаружена",
+                );
             }
             res.send(card);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при попытке постановки лайка",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Карточки с данным ID не существует",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err));
-        });
+        .catch(next);
 };
 
-const removeLike = (req, res) => {
+const removeLike = (req, res, next) => {
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        res.status(ERROR_CODE_BAD_REQ).send({
-            message: "Передан некорректный ID карточки",
-        });
+        throw BadRequestError(
+            "Передан некорректный ID карточки",
+        );
     }
     const owner = req.user._id;
     Card.findByIdAndUpdate(cardID, { $pull: { likes: owner } }, { new: true })
         .then(card => {
             if (!card) {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Карточка с данным ID не обнаружена",
-                });
-                return;
+                throw NotFoundError(
+                    "Карточка с данным ID не обнаружена",
+                );
             }
             res.send(card);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при попытке снятия лайка",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Карточки с данным ID не существует",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send(showUnknownError(err));
-        });
+        .catch(next);
 };
 
 module.exports = {

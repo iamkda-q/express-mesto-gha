@@ -4,106 +4,67 @@ const jwt = require("jsonwebtoken");
 
 const validator = require("validator");
 const User = require("../models/users");
-const {
-    showUnknownError,
-    ERROR_CODE_BAD_REQ,
-    ERROR_CODE_NOT_FOUND,
-    ERROR_CODE_DEFAULT,
-} = require("../constants/constants");
 
-const getUsers = (req, res) => {
+const {
+    NotFoundError,
+    BadRequestError,
+    AuthorizationError,
+} = require("../errors/errors");
+
+const getUsers = (req, res, next) => {
     User.find({})
         .then(users => {
             res.send(users);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .catch(next);
 };
 
-const getUserById = (req, res) => {
-    if (req.params.userId.length !== 24) {
-        res.status(ERROR_CODE_BAD_REQ).send({
-            message: "Передан некорректный ID пользователя",
-        });
+const getUserById = (req, res, next) => {
+    const owner = req.params.userId === "me" ? req.user._id : req.params.userId;
+    if (owner.length !== 24) {
+        throw BadRequestError("Передан некорректный ID пользователя");
     }
-    User.findById(req.params.userId)
+    User.findById(owner)
         .then(user => {
             if (!user) {
-                res.status(ERROR_CODE_NOT_FOUND).send({
-                    message: "Пользователь не обнаружен",
-                });
-                return;
+                throw NotFoundError("Пользователь не обнаружен");
             }
-            res.send(user);
+            const { name, about, avatar } = user;
+            res.send({ name, about, avatar });
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message: "Пользователь не обнаружен",
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
     const { email, password, ...other } = req.body;
     if (!validator.isEmail(email)) {
-        res.status(ERROR_CODE_BAD_REQ).send({
-            message: "Переданы некорректные данные электронной почты'",
-        });
-        return;
+        throw BadRequestError("Переданы некорректные данные электронной почты");
     }
     bcrypt
         .hash(password, 10)
         .then(hash => User.create({ ...other, email, password: hash }))
-        .then(user => res.send(user))
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при создании пользователя",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .then(() => res.send({ message: "Регистрация прошла успешно" }))
+        .catch(next);
 };
 
-const updateProfileInfo = (req, res) => {
+const updateProfileInfo = (req, res, next) => {
     const { name, about } = req.body;
     if (name) {
         if (name.length < 2) {
-            res.status(ERROR_CODE_BAD_REQ).send({
-                message: "Имя пользователя меньше 2 символов",
-            });
+            throw BadRequestError("Имя пользователя меньше 2 символов");
         } else if (name.length > 30) {
-            res.status(ERROR_CODE_BAD_REQ).send({
-                message: "Имя пользователя больше 30 символов",
-            });
+            throw BadRequestError("Имя пользователя больше 30 символов");
         }
     }
     if (about) {
         if (about.length < 2) {
-            res.status(ERROR_CODE_BAD_REQ).send({
-                message: "Информация о пользователе (about) меньше 2 символов",
-            });
+            throw BadRequestError(
+                "Информация о пользователе (about) меньше 2 символов",
+            );
         } else if (about.length > 30) {
-            res.status(ERROR_CODE_BAD_REQ).send({
-                message: "Информация о пользователе (about) больше 30 символов",
-            });
+            throw BadRequestError(
+                "Информация о пользователе (about) больше 30 символов",
+            );
         }
     }
     const owner = req.user._id;
@@ -115,55 +76,33 @@ const updateProfileInfo = (req, res) => {
         .then(user => {
             res.send(user);
         })
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "CastError" || err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при попытке обновления информации",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .catch(next);
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
     const owner = req.user._id;
     User.findByIdAndUpdate(owner, req.body, {
         new: true,
         runValidators: true,
     })
         .then(user => res.send(user))
-        .catch(err => {
-            console.log(showUnknownError(err));
-            if (err.name === "CastError" || err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                        "Переданы некорректные данные при попытке обновления информации",
-                    reason: `${err.message}`,
-                });
-                return;
-            }
-            res.status(ERROR_CODE_DEFAULT).send({
-                message: `${showUnknownError(err)}`,
-            });
-        });
+        .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
     const { email, password } = req.body;
     return User.findUserByCredentials(email, password)
         .then(user => {
-            const token = jwt.sign({ _id: user._id }, "some-secret-key", { expiresIn: "7d" });
-            res.send({ token });
+            try {
+                const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+                    expiresIn: "7d",
+                });
+                res.send({ token });
+            } catch (err) {
+                throw AuthorizationError();
+            }
         })
-        .catch(err => {
-            res.status(401).send({ message: err.message });
-        });
+        .catch(next);
 };
 
 module.exports = {
