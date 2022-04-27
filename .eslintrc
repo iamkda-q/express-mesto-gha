@@ -3,12 +3,8 @@
     "rules": {
         "no-underscore-dangle": ["error", { "allow": ["_id"] }],
         "quotes": ["error", "double"],
-<<<<<<< HEAD
         "indent": ["error", 4],
         "arrow-parens": ["error", "as-needed"]
-=======
-        "indent": ["error", 4]
->>>>>>> 612719a51c805c75dd53eebde737b3d262514acc
     }
 }
 

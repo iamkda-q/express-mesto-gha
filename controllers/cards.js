@@ -17,7 +17,7 @@ const deleteCard = (req, res, next) => {
     const currentUser = req.user._id;
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        throw BadRequestError(
+        throw new BadRequestError(
             "Передан некорректный ID карточки",
         );
     }
@@ -25,12 +25,12 @@ const deleteCard = (req, res, next) => {
         // eslint-disable-next-line consistent-return
         .then(card => {
             if (!card) {
-                throw NotFoundError(
+                throw new NotFoundError(
                     "Карточка с данным ID не обнаружена",
                 );
             }
             if (currentUser !== card.owner.toString()) {
-                throw BadRequestError(
+                throw new BadRequestError(
                     "Вы не являетесь владельцем данной карточки",
                 );
             }
@@ -56,7 +56,7 @@ const createCard = (req, res, next) => {
 const setLike = (req, res, next) => {
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        throw BadRequestError(
+        throw new BadRequestError(
             "Передан некорректный ID карточки",
         );
     }
@@ -68,7 +68,7 @@ const setLike = (req, res, next) => {
     )
         .then(card => {
             if (!card) {
-                throw NotFoundError(
+                throw new NotFoundError(
                     "Карточка с данным ID не обнаружена",
                 );
             }
@@ -80,7 +80,7 @@ const setLike = (req, res, next) => {
 const removeLike = (req, res, next) => {
     const cardID = req.params.cardId;
     if (cardID.length !== 24) {
-        throw BadRequestError(
+        throw new BadRequestError(
             "Передан некорректный ID карточки",
         );
     }
@@ -88,7 +88,7 @@ const removeLike = (req, res, next) => {
     Card.findByIdAndUpdate(cardID, { $pull: { likes: owner } }, { new: true })
         .then(card => {
             if (!card) {
-                throw NotFoundError(
+                throw new NotFoundError(
                     "Карточка с данным ID не обнаружена",
                 );
             }

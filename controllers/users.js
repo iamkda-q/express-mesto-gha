@@ -22,12 +22,12 @@ const getUsers = (req, res, next) => {
 const getUserById = (req, res, next) => {
     const owner = req.params.userId === "me" ? req.user._id : req.params.userId;
     if (owner.length !== 24) {
-        throw BadRequestError("Передан некорректный ID пользователя");
+        throw new BadRequestError("Передан некорректный ID пользователя");
     }
     User.findById(owner)
         .then(user => {
             if (!user) {
-                throw NotFoundError("Пользователь не обнаружен");
+                throw new NotFoundError("Пользователь не обнаружен");
             }
             const { name, about, avatar } = user;
             res.send({ name, about, avatar });
@@ -38,7 +38,7 @@ const getUserById = (req, res, next) => {
 const createUser = (req, res, next) => {
     const { email, password, ...other } = req.body;
     if (!validator.isEmail(email)) {
-        throw BadRequestError("Переданы некорректные данные электронной почты");
+        throw new BadRequestError("Переданы некорректные данные электронной почты");
     }
     bcrypt
         .hash(password, 10)
@@ -51,18 +51,18 @@ const updateProfileInfo = (req, res, next) => {
     const { name, about } = req.body;
     if (name) {
         if (name.length < 2) {
-            throw BadRequestError("Имя пользователя меньше 2 символов");
+            throw new BadRequestError("Имя пользователя меньше 2 символов");
         } else if (name.length > 30) {
-            throw BadRequestError("Имя пользователя больше 30 символов");
+            throw new BadRequestError("Имя пользователя больше 30 символов");
         }
     }
     if (about) {
         if (about.length < 2) {
-            throw BadRequestError(
+            throw new BadRequestError(
                 "Информация о пользователе (about) меньше 2 символов",
             );
         } else if (about.length > 30) {
-            throw BadRequestError(
+            throw new BadRequestError(
                 "Информация о пользователе (about) больше 30 символов",
             );
         }
@@ -99,7 +99,7 @@ const login = (req, res, next) => {
                 });
                 res.send({ token });
             } catch (err) {
-                throw AuthorizationError();
+                throw new AuthorizationError();
             }
         })
         .catch(next);
