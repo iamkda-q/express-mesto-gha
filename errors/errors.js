@@ -27,9 +27,17 @@ class ConflictError extends Error {
     }
 }
 
+class AuthorViolationError extends Error {
+    constructor(message) {
+        super(message);
+        this.statusCode = 403;
+    }
+}
+
 module.exports = {
     NotFoundError,
     BadRequestError,
     AuthorizationError,
     ConflictError,
+    AuthorViolationError,
 };

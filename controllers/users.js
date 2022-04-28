@@ -43,13 +43,18 @@ const createUser = (req, res, next) => {
     User.findOne({ email })
         .then(user => {
             if (user) {
-                throw new ConflictError("Пользователь с данным email уже зарегистрирован");
+                throw new ConflictError(
+                    "Пользователь с данным email уже зарегистрирован",
+                );
             }
         })
         .then(() => {
             bcrypt
                 .hash(password, 10)
-                .then(hash => User.create({ ...other, email, password: hash }))
+                .then(hash => User.create(
+                    { ...other, email, password: hash },
+                ))
+                .then(() => User.findOne({ email }))
                 .then(user => res.send(user));
         })
         .catch(next);

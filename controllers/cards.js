@@ -3,6 +3,7 @@ const Card = require("../models/cards");
 const {
     NotFoundError,
     BadRequestError,
+    AuthorViolationError,
 } = require("../errors/errors");
 
 const getCards = (req, res, next) => {
@@ -30,7 +31,7 @@ const deleteCard = (req, res, next) => {
                 );
             }
             if (currentUser !== card.owner.toString()) {
-                throw new BadRequestError(
+                throw new AuthorViolationError(
                     "Вы не являетесь владельцем данной карточки",
                 );
             }
