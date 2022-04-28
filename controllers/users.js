@@ -29,8 +29,7 @@ const getUserById = (req, res, next) => {
             if (!user) {
                 throw new NotFoundError("Пользователь не обнаружен");
             }
-            const { name, about, avatar } = user;
-            res.send({ name, about, avatar });
+            res.send(user);
         })
         .catch(next);
 };
@@ -43,7 +42,7 @@ const createUser = (req, res, next) => {
     bcrypt
         .hash(password, 10)
         .then(hash => User.create({ ...other, email, password: hash }))
-        .then(() => res.send({ message: "Регистрация прошла успешно" }))
+        .then(user => res.send(user))
         .catch(next);
 };
 
@@ -99,7 +98,7 @@ const login = (req, res, next) => {
                 });
                 res.send({ token });
             } catch (err) {
-                throw new AuthorizationError();
+                throw new AuthorizationError("Необходимо авторизоваться");
             }
         })
         .catch(next);

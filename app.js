@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-// const bcrypt = require("bcryptjs");
+const { errors, celebrate, Joi } = require("celebrate");
 const userRouter = require("./routes/users");
 const cardRouter = require("./routes/cards");
 const { createUser, login } = require("./controllers/users");
@@ -23,15 +23,37 @@ mongoose
         console.log(err);
     });
 
-app.post("/signin", login);
-app.post("/signup", createUser);
+app.post("/signin", celebrate({
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+        password: Joi.string().required().min(4),
+    }),
+}), login);
+app.post("/signup", celebrate({
+    body: Joi.object().keys({
+        name: Joi.string().required().min(2).max(30),
+        about: Joi.string().min(2).max(30),
+        avatar: Joi.string().regex(/https?:\/\/w{0,3}\.?[\w]+/),
+        email: Joi.string().required().email(),
+        password: Joi.string().required().min(4),
+    }),
+}), createUser);
 
-app.use(auth);
+app.use(auth, celebrate({
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+        password: Joi.string().required().min(4),
+    }),
+}));
 
 app.use("/", cardRouter);
 app.use("/", userRouter);
 
-app.use("/", () => { throw new NotFoundError("Такой страницы не существует"); });
+app.use("/", () => {
+    throw new NotFoundError("Такой страницы не существует");
+});
+
+app.use(errors());
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
