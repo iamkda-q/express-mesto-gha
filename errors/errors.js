@@ -20,4 +20,16 @@ class AuthorizationError extends Error {
     }
 }
 
-module.exports = { NotFoundError, BadRequestError, AuthorizationError };
+class ConflictError extends Error {
+    constructor(message) {
+        super(message);
+        this.statusCode = 409;
+    }
+}
+
+module.exports = {
+    NotFoundError,
+    BadRequestError,
+    AuthorizationError,
+    ConflictError,
+};

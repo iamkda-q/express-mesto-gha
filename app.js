@@ -29,9 +29,10 @@ app.post("/signin", celebrate({
         password: Joi.string().required().min(4),
     }),
 }), login);
+
 app.post("/signup", celebrate({
     body: Joi.object().keys({
-        name: Joi.string().required().min(2).max(30),
+        name: Joi.string().min(2).max(30),
         about: Joi.string().min(2).max(30),
         avatar: Joi.string().regex(/https?:\/\/w{0,3}\.?[\w]+/),
         email: Joi.string().required().email(),
@@ -39,19 +40,21 @@ app.post("/signup", celebrate({
     }),
 }), createUser);
 
+app.use("/:path", (req, res, next) => {
+    if (req.params.path !== "cards" && req.params.path !== "users") {
+        throw new NotFoundError("Такой страницы не существует");
+    }
+    next();
+});
+
 app.use(auth, celebrate({
-    body: Joi.object().keys({
-        email: Joi.string().required().email(),
-        password: Joi.string().required().min(4),
-    }),
+    headers: Joi.object().keys({
+        authorization: Joi.string().required().regex(/Bearer/),
+    }).unknown(true),
 }));
 
 app.use("/", cardRouter);
 app.use("/", userRouter);
-
-app.use("/", () => {
-    throw new NotFoundError("Такой страницы не существует");
-});
 
 app.use(errors());
 

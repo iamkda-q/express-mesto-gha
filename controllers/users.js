@@ -9,6 +9,7 @@ const {
     NotFoundError,
     BadRequestError,
     AuthorizationError,
+    ConflictError,
 } = require("../errors/errors");
 
 const getUsers = (req, res, next) => {
@@ -39,10 +40,18 @@ const createUser = (req, res, next) => {
     if (!validator.isEmail(email)) {
         throw new BadRequestError("Переданы некорректные данные электронной почты");
     }
-    bcrypt
-        .hash(password, 10)
-        .then(hash => User.create({ ...other, email, password: hash }))
-        .then(user => res.send(user))
+    User.findOne({ email })
+        .then(user => {
+            if (user) {
+                throw new ConflictError("Пользователь с данным email уже зарегистрирован");
+            }
+        })
+        .then(() => {
+            bcrypt
+                .hash(password, 10)
+                .then(hash => User.create({ ...other, email, password: hash }))
+                .then(user => res.send(user));
+        })
         .catch(next);
 };
 
