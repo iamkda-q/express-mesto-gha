@@ -32,7 +32,7 @@ userRouter.patch("/users/me", celebrate({
 userRouter.patch("/users/me/avatar", celebrate({
     body: Joi.object().keys({
         // eslint-disable-next-line no-useless-escape
-        avatar: Joi.string().regex(/https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]\.[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]/),
+        avatar: Joi.string().regex(/https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]*/),
     }),
 }), updateAvatar);
 
