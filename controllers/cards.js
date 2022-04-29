@@ -2,9 +2,10 @@ const Card = require("../models/cards");
 
 const {
     NotFoundError,
-    BadRequestError,
     AuthorViolationError,
 } = require("../errors/errors");
+
+const { ERROR_CODE_BAD_REQ } = require("../constants/constants");
 
 const getCards = (req, res, next) => {
     Card.find({})
@@ -17,11 +18,6 @@ const getCards = (req, res, next) => {
 const deleteCard = (req, res, next) => {
     const currentUser = req.user._id;
     const cardID = req.params.cardId;
-    if (cardID.length !== 24) {
-        throw new BadRequestError(
-            "Передан некорректный ID карточки",
-        );
-    }
     Card.findById(cardID)
         // eslint-disable-next-line consistent-return
         .then(card => {
@@ -42,7 +38,15 @@ const deleteCard = (req, res, next) => {
                 message: `Карточка "${card.name}" успешно удалена`,
             });
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "CastError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: `Карточка с ID ${cardID} не обнаружена`,
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const createCard = (req, res, next) => {
@@ -52,17 +56,19 @@ const createCard = (req, res, next) => {
             res.send(card);
         })
         .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+            "Переданы некорректные данные при создании карточки",
+                });
+                return;
+            }
             next(err);
         });
 };
 
 const setLike = (req, res, next) => {
     const cardID = req.params.cardId;
-    if (cardID.length !== 24) {
-        throw new BadRequestError(
-            "Передан некорректный ID карточки",
-        );
-    }
     const owner = req.user._id;
     Card.findByIdAndUpdate(
         cardID,
@@ -77,16 +83,26 @@ const setLike = (req, res, next) => {
             }
             res.send(card);
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                "Переданы некорректные данные при попытке снятия лайка",
+                });
+                return;
+            }
+            if (err.name === "CastError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: "Карточки с данным ID не существует",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const removeLike = (req, res, next) => {
     const cardID = req.params.cardId;
-    if (cardID.length !== 24) {
-        throw new BadRequestError(
-            "Передан некорректный ID карточки",
-        );
-    }
     const owner = req.user._id;
     Card.findByIdAndUpdate(cardID, { $pull: { likes: owner } }, { new: true })
         .then(card => {
@@ -97,7 +113,22 @@ const removeLike = (req, res, next) => {
             }
             res.send(card);
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                    "Переданы некорректные данные при попытке снятия лайка",
+                });
+                return;
+            }
+            if (err.name === "CastError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: "Карточки с данным ID не существует",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 module.exports = {

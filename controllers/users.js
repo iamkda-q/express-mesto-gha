@@ -2,12 +2,11 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const validator = require("validator");
 const User = require("../models/users");
 
+const { ERROR_CODE_BAD_REQ } = require("../constants/constants");
 const {
     NotFoundError,
-    BadRequestError,
     AuthorizationError,
     ConflictError,
 } = require("../errors/errors");
@@ -22,9 +21,6 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
     const owner = req.params.userId === "me" ? req.user._id : req.params.userId;
-    if (owner.length !== 24) {
-        throw new BadRequestError("Передан некорректный ID пользователя");
-    }
     User.findById(owner)
         .then(user => {
             if (!user) {
@@ -32,14 +28,26 @@ const getUserById = (req, res, next) => {
             }
             res.send(user);
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                  "Переданы невалидные данные",
+                });
+                return;
+            }
+            if (err.name === "CastError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message: "Пользователя с данным ID не существует",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const createUser = (req, res, next) => {
     const { email, password, ...other } = req.body;
-    if (!validator.isEmail(email)) {
-        throw new BadRequestError("Переданы некорректные данные электронной почты");
-    }
     User.findOne({ email })
         .then(user => {
             if (user) {
@@ -57,29 +65,20 @@ const createUser = (req, res, next) => {
                 .then(() => User.findOne({ email }))
                 .then(user => res.send(user));
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                  "Переданы невалидные данные",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const updateProfileInfo = (req, res, next) => {
     const { name, about } = req.body;
-    if (name) {
-        if (name.length < 2) {
-            throw new BadRequestError("Имя пользователя меньше 2 символов");
-        } else if (name.length > 30) {
-            throw new BadRequestError("Имя пользователя больше 30 символов");
-        }
-    }
-    if (about) {
-        if (about.length < 2) {
-            throw new BadRequestError(
-                "Информация о пользователе (about) меньше 2 символов",
-            );
-        } else if (about.length > 30) {
-            throw new BadRequestError(
-                "Информация о пользователе (about) больше 30 символов",
-            );
-        }
-    }
     const owner = req.user._id;
     User.findByIdAndUpdate(
         owner,
@@ -89,7 +88,16 @@ const updateProfileInfo = (req, res, next) => {
         .then(user => {
             res.send(user);
         })
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                  "Переданы невалидные данные",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const updateAvatar = (req, res, next) => {
@@ -99,7 +107,16 @@ const updateAvatar = (req, res, next) => {
         runValidators: true,
     })
         .then(user => res.send(user))
-        .catch(next);
+        .catch(err => {
+            if (err.name === "ValidationError") {
+                res.status(ERROR_CODE_BAD_REQ).send({
+                    message:
+                  "Переданы невалидные данные",
+                });
+                return;
+            }
+            next(err);
+        });
 };
 
 const login = (req, res, next) => {

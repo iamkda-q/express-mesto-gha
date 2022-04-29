@@ -26,7 +26,7 @@ mongoose
 app.post("/signin", celebrate({
     body: Joi.object().keys({
         email: Joi.string().required().email(),
-        password: Joi.string().required().min(4),
+        password: Joi.string().required(),
     }),
 }), login);
 
@@ -35,18 +35,11 @@ app.post("/signup", celebrate({
         name: Joi.string().min(2).max(30),
         about: Joi.string().min(2).max(30),
         // eslint-disable-next-line no-useless-escape
-        avatar: Joi.string().regex(/https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]*/),
+        avatar: Joi.string().regex(/^https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/),
         email: Joi.string().required().email(),
-        password: Joi.string().required().min(4),
+        password: Joi.string().required(),
     }),
 }), createUser);
-
-app.use("/:path", (req, res, next) => {
-    if (req.params.path !== "cards" && req.params.path !== "users") {
-        throw new NotFoundError("Такой страницы не существует");
-    }
-    next();
-});
 
 app.use(auth, celebrate({
     headers: Joi.object().keys({
@@ -56,6 +49,10 @@ app.use(auth, celebrate({
 
 app.use("/", cardRouter);
 app.use("/", userRouter);
+
+app.use("/", () => {
+    throw new NotFoundError("Такой страницы не существует");
+});
 
 app.use(errors());
 

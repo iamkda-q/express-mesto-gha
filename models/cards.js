@@ -9,6 +9,13 @@ const cardSchema = new mongoose.Schema({
     },
     link: {
         type: String,
+        validate: {
+            validator(v) {
+                // eslint-disable-next-line no-useless-escape
+                return /^https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/.test(v);
+            },
+            message: "Your link is not a valid link!",
+        },
         required: true,
     },
     owner: {
@@ -17,7 +24,8 @@ const cardSchema = new mongoose.Schema({
         required: true,
     },
     likes: {
-        type: Array,
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "user",
         required: true,
         default: [],
     },
