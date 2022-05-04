@@ -12,7 +12,7 @@ const cardSchema = new mongoose.Schema({
         validate: {
             validator(v) {
                 // eslint-disable-next-line no-useless-escape
-                return /^https?:\/\/(www\.)?[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/.test(v);
+                return /^https?:\/\/(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[a-zA-Z]{2,}[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/.test(v);
             },
             message: "Your link is not a valid link!",
         },

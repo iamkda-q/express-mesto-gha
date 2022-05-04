@@ -4,11 +4,11 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/users");
 
-const { ERROR_CODE_BAD_REQ } = require("../constants/constants");
 const {
     NotFoundError,
     AuthorizationError,
     ConflictError,
+    BadRequestError,
 } = require("../errors/errors");
 
 const getUsers = (req, res, next) => {
@@ -29,19 +29,8 @@ const getUserById = (req, res, next) => {
             res.send(user);
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                  "Переданы невалидные данные",
-                });
-                return;
-            }
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message: "Пользователя с данным ID не существует",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные")); }
+            if (err.name === "CastError") { next(new BadRequestError("Пользователя с данным ID не существует")); }
             next(err);
         });
 };
@@ -66,13 +55,7 @@ const createUser = (req, res, next) => {
                 .then(user => res.send(user));
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                  "Переданы невалидные данные",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
             next(err);
         });
 };
@@ -89,13 +72,7 @@ const updateProfileInfo = (req, res, next) => {
             res.send(user);
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                  "Переданы невалидные данные",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
             next(err);
         });
 };
@@ -108,13 +85,7 @@ const updateAvatar = (req, res, next) => {
     })
         .then(user => res.send(user))
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                  "Переданы невалидные данные",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
             next(err);
         });
 };

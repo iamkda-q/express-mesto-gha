@@ -3,9 +3,8 @@ const Card = require("../models/cards");
 const {
     NotFoundError,
     AuthorViolationError,
+    BadRequestError,
 } = require("../errors/errors");
-
-const { ERROR_CODE_BAD_REQ } = require("../constants/constants");
 
 const getCards = (req, res, next) => {
     Card.find({})
@@ -39,12 +38,7 @@ const deleteCard = (req, res, next) => {
             });
         })
         .catch(err => {
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message: `Карточка с ID ${cardID} не обнаружена`,
-                });
-                return;
-            }
+            if (err.name === "CastError") { next(new BadRequestError(`Карточка с ID ${cardID} не обнаружена`)); }
             next(err);
         });
 };
@@ -56,13 +50,7 @@ const createCard = (req, res, next) => {
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-            "Переданы некорректные данные при создании карточки",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при создании карточки")); }
             next(err);
         });
 };
@@ -84,19 +72,8 @@ const setLike = (req, res, next) => {
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                "Переданы некорректные данные при попытке снятия лайка",
-                });
-                return;
-            }
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message: "Карточки с данным ID не существует",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
+            if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
             next(err);
         });
 };
@@ -114,19 +91,8 @@ const removeLike = (req, res, next) => {
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message:
-                    "Переданы некорректные данные при попытке снятия лайка",
-                });
-                return;
-            }
-            if (err.name === "CastError") {
-                res.status(ERROR_CODE_BAD_REQ).send({
-                    message: "Карточки с данным ID не существует",
-                });
-                return;
-            }
+            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
+            if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
             next(err);
         });
 };
