@@ -29,9 +29,13 @@ const getUserById = (req, res, next) => {
             res.send(user);
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные")); }
-            else if (err.name === "CastError") { next(new BadRequestError("Пользователя с данным ID не существует")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(new BadRequestError("Переданы некорректные данные"));
+            } else if (err.name === "CastError") {
+                next(new BadRequestError("Пользователя с данным ID не существует"));
+            } else {
+                next(err);
+            }
         });
 };
 
@@ -48,15 +52,16 @@ const createUser = (req, res, next) => {
         .then(() => {
             bcrypt
                 .hash(password, 10)
-                .then(hash => User.create(
-                    { ...other, email, password: hash },
-                ))
+                .then(hash => User.create({ ...other, email, password: hash }))
                 .then(() => User.findOne({ email }))
                 .then(user => res.send(user));
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(new BadRequestError("Переданы невалидные данные"));
+            } else {
+                next(err);
+            }
         });
 };
 
@@ -72,8 +77,11 @@ const updateProfileInfo = (req, res, next) => {
             res.send(user);
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(new BadRequestError("Переданы невалидные данные"));
+            } else {
+                next(err);
+            }
         });
 };
 
@@ -85,8 +93,11 @@ const updateAvatar = (req, res, next) => {
     })
         .then(user => res.send(user))
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы невалидные данные")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(new BadRequestError("Переданы невалидные данные"));
+            } else {
+                next(err);
+            }
         });
 };
 

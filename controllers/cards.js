@@ -18,12 +18,10 @@ const deleteCard = (req, res, next) => {
     const currentUser = req.user._id;
     const cardID = req.params.cardId;
     Card.findById(cardID)
-        // eslint-disable-next-line consistent-return
+    // eslint-disable-next-line consistent-return
         .then(card => {
             if (!card) {
-                throw new NotFoundError(
-                    "Карточка с данным ID не обнаружена",
-                );
+                throw new NotFoundError("Карточка с данным ID не обнаружена");
             }
             if (currentUser !== card.owner.toString()) {
                 throw new AuthorViolationError(
@@ -38,8 +36,11 @@ const deleteCard = (req, res, next) => {
             });
         })
         .catch(err => {
-            if (err.name === "CastError") { next(new BadRequestError(`Карточка с ID ${cardID} не обнаружена`)); }
-            else { next(err); }
+            if (err.name === "CastError") {
+                next(new BadRequestError(`Карточка с ID ${cardID} не обнаружена`));
+            } else {
+                next(err);
+            }
         });
 };
 
@@ -50,31 +51,40 @@ const createCard = (req, res, next) => {
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при создании карточки")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(
+                    new BadRequestError(
+                        "Переданы некорректные данные при создании карточки",
+                    ),
+                );
+            } else {
+                next(err);
+            }
         });
 };
 
 const setLike = (req, res, next) => {
     const cardID = req.params.cardId;
     const owner = req.user._id;
-    Card.findByIdAndUpdate(
-        cardID,
-        { $addToSet: { likes: owner } },
-        { new: true },
-    )
+    Card.findByIdAndUpdate(cardID, { $addToSet: { likes: owner } }, { new: true })
         .then(card => {
             if (!card) {
-                throw new NotFoundError(
-                    "Карточка с данным ID не обнаружена",
-                );
+                throw new NotFoundError("Карточка с данным ID не обнаружена");
             }
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
-            else if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(
+                    new BadRequestError(
+                        "Переданы некорректные данные при попытке снятия лайка",
+                    ),
+                );
+            } else if (err.name === "CastError") {
+                next(new BadRequestError("Карточки с данным ID не существует"));
+            } else {
+                next(err);
+            }
         });
 };
 
@@ -84,16 +94,22 @@ const removeLike = (req, res, next) => {
     Card.findByIdAndUpdate(cardID, { $pull: { likes: owner } }, { new: true })
         .then(card => {
             if (!card) {
-                throw new NotFoundError(
-                    "Карточка с данным ID не обнаружена",
-                );
+                throw new NotFoundError("Карточка с данным ID не обнаружена");
             }
             res.send(card);
         })
         .catch(err => {
-            if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
-            else if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
-            else { next(err); }
+            if (err.name === "ValidationError") {
+                next(
+                    new BadRequestError(
+                        "Переданы некорректные данные при попытке снятия лайка",
+                    ),
+                );
+            } else if (err.name === "CastError") {
+                next(new BadRequestError("Карточки с данным ID не существует"));
+            } else {
+                next(err);
+            }
         });
 };
 
