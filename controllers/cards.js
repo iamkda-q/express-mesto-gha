@@ -39,7 +39,7 @@ const deleteCard = (req, res, next) => {
         })
         .catch(err => {
             if (err.name === "CastError") { next(new BadRequestError(`Карточка с ID ${cardID} не обнаружена`)); }
-            next(err);
+            else { next(err); }
         });
 };
 
@@ -51,7 +51,7 @@ const createCard = (req, res, next) => {
         })
         .catch(err => {
             if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при создании карточки")); }
-            next(err);
+            else { next(err); }
         });
 };
 
@@ -73,8 +73,8 @@ const setLike = (req, res, next) => {
         })
         .catch(err => {
             if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
-            if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
-            next(err);
+            else if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
+            else { next(err); }
         });
 };
 
@@ -92,8 +92,8 @@ const removeLike = (req, res, next) => {
         })
         .catch(err => {
             if (err.name === "ValidationError") { next(new BadRequestError("Переданы некорректные данные при попытке снятия лайка")); }
-            if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
-            next(err);
+            else if (err.name === "CastError") { next(new BadRequestError("Карточки с данным ID не существует")); }
+            else { next(err); }
         });
 };
 
