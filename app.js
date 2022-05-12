@@ -1,4 +1,6 @@
 const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const { errors, celebrate, Joi } = require("celebrate");
@@ -12,19 +14,8 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const PORT = 3000;
 
 const app = express();
-app.use(bodyParser.json());
 
-/* mestodb */
-mongoose
-    .connect("mongodb://localhost:27017/mestodb", {
-        useNewUrlParser: true,
-    })
-    .then(() => console.log("DB is connected"))
-    .catch(err => {
-        console.log(err);
-    });
-
-const allowedCors = [
+/* const allowedCors = [
     "mydomain.mesto.nomoredomains.xyz",
     "localhost:3000",
 ];
@@ -41,6 +32,14 @@ app.use((req, res, next) => {
     }
     next();
 });
+ */
+
+/* CORS */
+app.use(cors());
+app.use(helmet());
+
+/* Парсер из JSON */
+app.use(bodyParser.json());
 
 /* мидлвара логирования запросов */
 app.use(requestLogger);
@@ -88,6 +87,15 @@ app.use((err, req, res, next) => {
         message: statusCode === 500 ? "На сервере произошла неизвестная ошибка" : message,
     });
 });
+
+mongoose
+    .connect("mongodb://localhost:27017/mestodb", {
+        useNewUrlParser: true,
+    })
+    .then(() => console.log("DB is connected"))
+    .catch(err => {
+        console.log(err);
+    });
 
 app.listen(PORT, () => {
     console.log(`Работаем на ${PORT}`);
