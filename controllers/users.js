@@ -111,7 +111,7 @@ const login = (req, res, next) => {
                 });
                 res.send({ token });
             } catch (err) {
-                throw new AuthorizationError("Необходимо авторизоваться");
+                throw new AuthorizationError("Ошибка авторизации");
             }
         })
         .catch(next);
