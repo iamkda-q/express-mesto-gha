@@ -24,6 +24,24 @@ mongoose
         console.log(err);
     });
 
+const allowedCors = [
+    "mydomain.mesto.nomoredomains.xyz",
+    "localhost:3000",
+];
+
+app.use((req, res, next) => {
+    const { origin } = req.headers;
+    if (allowedCors.includes(origin)) {
+        res.header("Access-Control-Allow-Origin", origin);
+    }
+    const requestHeaders = req.headers["access-control-request-headers"];
+    const { method } = req;
+    if (method === "OPTIONS") {
+        res.header("Access-Control-Allow-Methods", requestHeaders);
+    }
+    next();
+});
+
 /* мидлвара логирования запросов */
 app.use(requestLogger);
 
