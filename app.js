@@ -34,14 +34,14 @@ app.use(errors());
 app.use(errorHandler);
 
 mongoose
-    .connect("mongodb://localhost:27017/mestodb", {
-        useNewUrlParser: true,
-    })
-    .then(() => console.log("DB is connected"))
-    .catch(err => {
-        console.log(err);
-    });
+  .connect("mongodb://localhost:27017/mestodb", {
+    useNewUrlParser: true,
+  })
+  .then(() => console.log("DB is connected"))
+  .catch(err => {
+    console.log(err);
+  });
 
 app.listen(PORT, () => {
-    console.log(`Работаем на ${PORT}`);
+  console.log(`Работаем на ${PORT}`);
 });

@@ -8,32 +8,32 @@ const { celebrate, Joi } = require("celebrate");
 // const passwordValidator = { password: Joi.string().required().min(4) };
 
 const {
-    getUsers,
-    getUserById,
-    updateProfileInfo,
-    updateAvatar,
+  getUsers,
+  getUserById,
+  updateProfileInfo,
+  updateAvatar,
 } = require("../controllers/users");
 
 userRouter.get("/users", getUsers);
 
 userRouter.get("/users/:userId", celebrate({
-    params: Joi.object().keys({
-        userId: Joi.alternatives().try(Joi.string().alphanum().valid("me"), Joi.string().alphanum().hex().length(24)),
-    }),
+  params: Joi.object().keys({
+    userId: Joi.alternatives().try(Joi.string().alphanum().valid("me"), Joi.string().alphanum().hex().length(24)),
+  }),
 }), getUserById);
 
 userRouter.patch("/users/me", celebrate({
-    body: Joi.object().keys({
-        name: Joi.string().min(2).max(30),
-        about: Joi.string().min(2).max(30),
-    }),
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
 }), updateProfileInfo);
 
 userRouter.patch("/users/me/avatar", celebrate({
-    body: Joi.object().keys({
-        // eslint-disable-next-line no-useless-escape
-        avatar: Joi.string().regex(/^https?:\/\/(www\.)?([a-zA-Z0-9]([a-zA-Z0-9-]+[a-zA-Z0-9])|([a-zA-Z0-9]*)\.)+[a-zA-Z]{2,}\/[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/),
-    }),
+  body: Joi.object().keys({
+    // eslint-disable-next-line no-useless-escape
+    avatar: Joi.string().regex(/^https?:\/\/(www\.)?([a-zA-Z0-9]([a-zA-Z0-9-]+[a-zA-Z0-9])|([a-zA-Z0-9]*)\.)+[a-zA-Z]{2,}\/[\w\.\+@:_'~,-=#;\!\&\[\]\/\$\|\?\*\(\)]+$/),
+  }),
 }), updateAvatar);
 
 module.exports = userRouter;
